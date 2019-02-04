@@ -1,17 +1,21 @@
 from tornado.tcpclient import TCPClient
-from util import Util
+from util import Logger
+from multiprocessing import Process
 
 
-class TornadoTCPClient(TCPClient):
+class TornadoTCPClientHolder(Process, Logger):
+    """
+    Tornado TCPClinet Holder
+    """
+    def __init__(self):
+        self._tag = 'TCPClientHolder'
+        Process.__init__(self, daemon=True)
+
+
+class TornadoTCPClient(TCPClient, Logger):
     """
     TCPClient instance of tornado
     """
     def __init__(self):
         self._tag = 'TCPClient'
         TCPClient.__init__(self)
-
-    def _log(self, msg):
-        Util.log(self._tag, msg)
-
-
-

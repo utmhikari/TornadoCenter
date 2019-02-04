@@ -1,19 +1,34 @@
 from tornado.tcpserver import TCPServer
-from util import Util
+from util import Logger
+from multiprocessing import Process
 
 
-class TornadoTCPServer(TCPServer):
+class TornadoTCPServerHolder(Process, Logger):
+    """
+    Tornado TCPServer Holder
+    """
+    def __init__(self):
+        Process.__init__(self, daemon=True)
+        self._tag = 'TCPServerHolder'
+        self._server = None
+
+    def get_instance(self):
+        """
+        get the singleton of tornado tcp server
+        :return: tornado tcp server instance
+        """
+        if not self._server:
+            self._exception('No instance initialized!')
+        return self._server
+
+
+class TornadoTCPServer(TCPServer, Logger):
     """
     TCPServer instance of tornado
     """
-    def __init__(self):
+    def __init__(self, args=None):
         self._tag = 'TCPServer'
         TCPServer.__init__(self)
 
-    def _log(self, msg):
-        Util.log(self._tag, msg)
-
     def handle_stream(self, stream, address):
         self._log('Handling iostream at %s' % address)
-
-

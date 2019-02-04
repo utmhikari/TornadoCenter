@@ -44,3 +44,23 @@ class Util:
         kill self
         """
         sys.exit(0)
+
+
+class Logger:
+    """
+    Logger Class
+    """
+    def __init__(self):
+        self._tag = 'Logger'
+
+    def _log(self, msg):
+        """
+        print log with tag, like log.d in android applications
+        """
+        Util.log(self._tag, msg)
+
+    def _exception(self, err, is_trace=False):
+        """
+        print exception with self._log as callback
+        """
+        Util.exception(err, self._log, is_trace)
