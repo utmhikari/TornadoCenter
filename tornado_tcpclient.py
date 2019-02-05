@@ -16,6 +16,6 @@ class TornadoTCPClient(TCPClient, Logger):
     """
     TCPClient instance of tornado
     """
-    def __init__(self):
+    def __init__(self, params=None):
         self._tag = 'TCPClient'
         TCPClient.__init__(self)

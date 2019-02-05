@@ -1,5 +1,6 @@
 import sys
 import traceback
+import pprint
 
 
 class Util:
@@ -37,6 +38,15 @@ class Util:
         print log
         """
         print('[%s] %s' % (tag, msg))
+
+    @staticmethod
+    def pformat(obj):
+        """
+        format obj to string with indent of 2
+        :param obj: obj to be formatted
+        :return: formatted string
+        """
+        return pprint.pformat(obj, indent=2)
 
     @staticmethod
     def suicide():
