@@ -1,10 +1,15 @@
 import functools
 import time
+import sys
 import getopt
 from inspect import signature
 from util import Util, Logger
 from tornado_tcpserver import TornadoTCPServerHolder
 from tornado_tcpclient import TornadoTCPClientHolder
+
+# should be run with python version >= 3.5
+assert sys.version_info >= (3, 5)
+HELP_MSG = open('USAGE').read()
 
 
 class TornadoCenter(Logger):
@@ -25,16 +30,15 @@ class TornadoCenter(Logger):
                 'start': self._start_server,
                 'stop': self._stop_server,
                 'params': self._show_server_params,
+                'status': self._show_server_status
             }
         }
-        self._help_msg = 'Valid commands are: \n' \
-                         '\texit: Exit the TornadoCenter\n' \
-                         '\thelp: Show this help message'
+        self._help_msg = HELP_MSG
         '''
         Tornado TCP Server & Client
         '''
-        self._server_holder = None
-        self._client_holder = None
+        self._server_holder = TornadoTCPServerHolder()
+        self._client_holder = TornadoTCPClientHolder()
 
     def _dispatch(self, cmds, cmd_state):
         """
@@ -63,13 +67,14 @@ class TornadoCenter(Logger):
         :return:
         """
         self._log('Exiting TornadoCenter...')
+        if self._server_holder.is_server_active():
+            self._server_holder.stop()
         Util.suicide()
         return True
 
     def _help(self):
         """
         Print help message
-        :return:
         """
         self._log(self._help_msg)
         return True
@@ -77,36 +82,47 @@ class TornadoCenter(Logger):
     def _show_server_params(self):
         """
         Show the params of TCPServer
-        :return:
         """
         if not self._server_holder:
             self._exception('TCPServerHolder is not initialized!')
-            return False
-        params = self._server_holder.get_params()
-        self._log(Util.pformat(params))
+        else:
+            params = self._server_holder.get_params()
+            self._log(Util.pformat(params))
+            return True
+
+    def _show_server_status(self):
+        """
+        Show the status of TCPServer
+        """
+        is_active = self._server_holder.is_server_active()
+        if is_active:
+            self._log('The server is active!')
+        else:
+            self._log('The server is stopped!')
         return True
 
     def _start_server(self, cmds=None):
         """
         Start the TCPServer singleton
-        :return:
         """
         # parse cmd argv
         params = dict()
         if cmds:
             try:
-                opts, args = getopt.getopt(cmds, 'p:')
+                opts, args = getopt.getopt(cmds, 'p:n:')
                 for opt, arg in opts:
                     if opt == '-p':
                         params['port'] = arg
+                    if opt == '-n':
+                        params['num_processes'] = arg
             except getopt.GetoptError:
                 self._exception('Invalid command!!!\n\tserver start [-p <port>]')
                 return False
         # initialize tornado server
-        self._server_holder = TornadoTCPServerHolder()
         self._server_holder.set_params(params)
-        self._server_holder.start()
-        time.sleep(1)
+        ret = self._server_holder.start()
+        if ret:
+            time.sleep(1)
         return True
 
     def _stop_server(self):
@@ -114,7 +130,7 @@ class TornadoCenter(Logger):
         Stop the TCPServer singleton
         :return:
         """
-        self._log('Stopping Tornado TCPServer')
+        self._server_holder.stop()
         return True
         
     def loop(self):

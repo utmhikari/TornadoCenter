@@ -74,3 +74,53 @@ class Logger:
         print exception with self._log as callback
         """
         Util.exception(err, self._log, is_trace)
+
+
+class BaseCSHolder(Logger):
+    """
+    Client and Server Holder Class
+    """
+    def __init__(self):
+        Logger.__init__(self)
+        self._params = dict()
+
+    def get_param_keys(self):
+        """
+        get the keys of params
+        :return: sorted param keys
+        """
+        return sorted(self._params.keys())
+
+    def get_params(self):
+        """
+        get the params
+        :return: params dict
+        """
+        return self._params
+
+    def set_params(self, params):
+        """
+        set the params of the server
+        :return:
+        """
+        self._log('Setting params of %s...' % self._tag)
+        if not isinstance(params, dict):
+            self._exception('The argument params must be a dict!')
+            return
+        for k in params.keys():
+            if k in self._params.keys():
+                par_type = type(self._params[k])
+                # check int
+                if par_type == int:
+                    if not str.isdigit(params[k]):
+                        self._exception('The param %s should be an integer!' % k)
+                        continue
+                    params[k] = int(params[k])
+                # check type of instance at last
+                if not type(params[k]) == par_type:
+                    self._exception('The param %s does not match the correct data type %s!' %
+                                    (k, par_type))
+                    continue
+                self._params[k] = params[k]
+                self._log('Set param %s to %s!' % (k, params[k]))
+        self._log('Finished setting params of %s!' % self._tag)
