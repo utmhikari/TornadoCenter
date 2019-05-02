@@ -9,5 +9,11 @@ server params
     Show the params of TCPServer
 server status
     Show the status of TCPServer
+client start
+    Start Tornado TCPClient
+client stop
+    Stop Tornado TCPClient
+client status
+    Show the status of TCPClient
 exit
     Exit the TornadoCenter

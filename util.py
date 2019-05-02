@@ -60,8 +60,8 @@ class Logger:
     """
     Logger Class
     """
-    def __init__(self):
-        self._tag = 'Logger'
+    def __init__(self, tag='Logger'):
+        self._tag = tag
 
     def _log(self, msg):
         """
@@ -80,8 +80,8 @@ class BaseCSHolder(Logger):
     """
     Client and Server Holder Class
     """
-    def __init__(self):
-        Logger.__init__(self)
+    def __init__(self, tag='BaseCSHolder'):
+        Logger.__init__(self, tag)
         self._params = dict()
 
     def get_param_keys(self):
@@ -112,7 +112,7 @@ class BaseCSHolder(Logger):
                 par_type = type(self._params[k])
                 # check int
                 if par_type == int:
-                    if not str.isdigit(params[k]):
+                    if not isinstance(params[k], int) and not str.isdigit(params[k]):
                         self._exception('The param %s should be an integer!' % k)
                         continue
                     params[k] = int(params[k])
@@ -123,4 +123,7 @@ class BaseCSHolder(Logger):
                     continue
                 self._params[k] = params[k]
                 self._log('Set param %s to %s!' % (k, params[k]))
+            else:
+                self._log('Set param %s to %s!' % (k, params[k]))
+                self._params[k] = params[k]
         self._log('Finished setting params of %s!' % self._tag)

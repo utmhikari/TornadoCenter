@@ -20,9 +20,8 @@ class TornadoCenter(Logger):
         """
         Initialization
         """
-        super().__init__()
+        Logger.__init__(self, 'TornadoCenter')
         self._log('Welcome to TornadoCenter!!!')
-        self._tag = 'TornadoCenter'
         self._cmd_state = {
             'exit': self._exit,
             'help': self._help,
@@ -31,6 +30,11 @@ class TornadoCenter(Logger):
                 'stop': self._stop_server,
                 'params': self._show_server_params,
                 'status': self._show_server_status
+            },
+            'client': {
+                'start': self._start_client,
+                'stop': self._stop_client,
+                'status': self._show_client_status
             }
         }
         self._help_msg = HELP_MSG
@@ -101,6 +105,17 @@ class TornadoCenter(Logger):
             self._log('The server is stopped!')
         return True
 
+    def _show_client_status(self):
+        """
+        Show the status of TCPClient
+        """
+        is_active = self._client_holder.is_client_active()
+        if is_active:
+            self._log('The client is active!')
+        else:
+            self._log('The client is stopped!')
+        return True
+
     def _start_server(self, cmds=None):
         """
         Start the TCPServer singleton
@@ -125,12 +140,31 @@ class TornadoCenter(Logger):
             time.sleep(1)
         return True
 
+    def _start_client(self):
+        """
+        start the TCPClient
+        """
+        if not self._server_holder.is_server_active():
+            self._exception('Cannot start client! Server is not active!')
+        else:
+            self._client_holder.set_params(self._server_holder.get_params())
+            ret = self._client_holder.start()
+            if ret:
+                time.sleep(1)
+        return True
+
     def _stop_server(self):
         """
         Stop the TCPServer singleton
-        :return:
         """
         self._server_holder.stop()
+        return True
+
+    def _stop_client(self):
+        """
+        stop the TCPClient
+        """
+        self._client_holder.stop()
         return True
         
     def loop(self):
